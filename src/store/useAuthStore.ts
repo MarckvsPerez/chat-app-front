@@ -5,6 +5,9 @@ import { SignupFormData } from "../pages/SignupPage";
 import toast from "react-hot-toast";
 import { LoginFormData } from "../pages/LoginPage";
 import { UpdateProfileFormData } from "../pages/ProfilePage";
+import { io, Socket } from "socket.io-client";
+
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
 type AuthStore = {
     authUser: User | null;
@@ -12,7 +15,9 @@ type AuthStore = {
     isLoggingIn: boolean;
     isUpdatingProfile: boolean;
     isCheckingAuth: boolean;
-
+    onlineUsers: string[];
+    socket: Socket | null;
+    
     checkAuth: () => Promise<void>;
     signup: (data: SignupFormData) => Promise<void>;
     logout: () => Promise<void>;
@@ -20,13 +25,14 @@ type AuthStore = {
     updateProfile: (data: UpdateProfileFormData) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
     authUser: null,
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,
-
     isCheckingAuth: true,
+    onlineUsers: [],
+    socket: null,
 
     checkAuth: async () => {
         try {
@@ -93,4 +99,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
         }
       },
     
-}))
+      connectSocket: () => {
+        const { authUser } = get();
+        if (!authUser || get().socket?.connected) return;
+    
+        const socket = io(BASE_URL, {
+          query: {
+            userId: authUser._id,
+          },
+        });
+        socket.connect();
+    
+        set({ socket: socket });
+    
+        socket.on("getOnlineUsers", (userIds) => {
+          set({ onlineUsers: userIds });
+        });
+      },
+      disconnectSocket: () => {
+        const socket = get().socket;
+        if (socket && socket.connected) socket.disconnect();
+      },
+    }));
