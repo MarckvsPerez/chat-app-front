@@ -51,8 +51,6 @@ const ChatContainer = () => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => {
-                    console.log(authUser._id);
-                    console.log(message.senderId);
                     return (
                         <div
                             key={message._id}

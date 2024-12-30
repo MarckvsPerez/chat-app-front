@@ -23,6 +23,8 @@ type AuthStore = {
     logout: () => Promise<void>;
     login: (data: LoginFormData) => Promise<void>;
     updateProfile: (data: UpdateProfileFormData) => Promise<void>;
+    connectSocket: () => void;
+    disconnectSocket: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -39,6 +41,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             const res = await api.get("/auth/check");
 
             set({ authUser: res.data.user });
+
+            get().connectSocket()
         } catch (error) {
             console.log("Error in checkAuth:", error);
             set({ authUser: null });
@@ -66,6 +70,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             await api.get("/auth/logout")
             set({ authUser: null })
             toast.success("Logout successful")
+            get().disconnectSocket()
         } catch (error) {
             toast.error("Logout failed")
             console.error(error)
@@ -77,6 +82,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         try {
             const response = await api.post("/auth/login", data)
             set({ authUser: response.data })
+            toast.success("Login successful")
+            get().connectSocket()
         } catch (error) {
             toast.error("Login failed")
             console.error(error)
