@@ -4,6 +4,7 @@ import { User } from "../types/User"
 import { SignupFormData } from "../pages/SignupPage";
 import toast from "react-hot-toast";
 import { LoginFormData } from "../pages/LoginPage";
+import { UpdateProfileFormData } from "../pages/ProfilePage";
 
 type AuthStore = {
     authUser: User | null;
@@ -16,6 +17,7 @@ type AuthStore = {
     signup: (data: SignupFormData) => Promise<void>;
     logout: () => Promise<void>;
     login: (data: LoginFormData) => Promise<void>;
+    updateProfile: (data: UpdateProfileFormData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -30,7 +32,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         try {
             const res = await api.get("/auth/check");
 
-            set({ authUser: res.data });
+            set({ authUser: res.data.user });
         } catch (error) {
             console.log("Error in checkAuth:", error);
             set({ authUser: null });
@@ -75,5 +77,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
         } finally {
             set({ isLoggingIn: false })
         }
-    }
+    },
+
+    updateProfile: async (data) => {
+        set({ isUpdatingProfile: true });
+        try {
+          const res = await api.put("/auth/update-profile", data);
+          set({ authUser: res.data });
+          toast.success("Profile updated successfully");
+        } catch (error) {
+          console.log("error in update profile:", error);
+          toast.error("Error in update profile");
+        } finally {
+          set({ isUpdatingProfile: false });
+        }
+      },
+    
 }))
