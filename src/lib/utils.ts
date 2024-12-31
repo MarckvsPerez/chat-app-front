@@ -5,3 +5,8 @@ export function formatMessageTime(date: string) {
       hour12: false,
     });
   }
+
+export function getStoredTokens() {
+    const tokens = localStorage.getItem("token");
+    return tokens;
+}

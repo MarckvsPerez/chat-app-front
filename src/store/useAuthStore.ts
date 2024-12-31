@@ -67,8 +67,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
     logout: async () => {
         try {
-            await api.get("/auth/logout")
             set({ authUser: null })
+            localStorage.removeItem("token")
             toast.success("Logout successful")
             get().disconnectSocket()
         } catch (error) {
@@ -82,6 +82,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         try {
             const response = await api.post("/auth/login", data)
             set({ authUser: response.data })
+            localStorage.setItem("token", response.data.token)
             toast.success("Login successful")
             get().connectSocket()
         } catch (error) {
