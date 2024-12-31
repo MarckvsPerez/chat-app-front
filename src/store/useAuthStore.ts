@@ -57,6 +57,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             const response = await api.post("/auth/signup", data)
             toast.success("Signup successful")
             set({ authUser: response.data })
+            localStorage.setItem("token", response.data.token)
         } catch (error) {
             toast.error("Signup failed")
             console.error(error)
